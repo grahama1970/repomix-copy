@@ -15,6 +15,7 @@ from repomix.utils.multi_directory import (
     validate_directories
 )
 from repomix.utils.llm import initialize_litellm_cache
+from unittest.mock import patch
 
 # Test URLs for different scenarios
 SINGLE_URL = "https://github.com/raycast/script-commands/tree/master/commands/browsing"
@@ -42,6 +43,14 @@ def setup_litellm():
     
     # Mock LiteLLM completion for testing
     async def mock_completion(**kwargs):
+        # Raise NotFoundError for invalid model IDs
+        if kwargs.get("model") == "openai/gpt-5":
+            raise litellm.NotFoundError(
+                message="Model not found: openai/gpt-5",
+                model="openai/gpt-5",
+                llm_provider="openai"
+            )
+            
         return litellm.ModelResponse(
             id="test-id",
             choices=[
@@ -54,19 +63,17 @@ def setup_litellm():
                     finish_reason="stop"
                 )
             ],
-            model=kwargs.get("model", "gpt-4"),
+            model=kwargs.get("model", "openai/gpt-4"),
             usage=litellm.Usage(
                 prompt_tokens=10,
                 completion_tokens=5,
                 total_tokens=15
-            ),
-            _hidden_params={"cache_hit": False}
+            )
         )
     
-    # Replace acompletion with mock
-    litellm.acompletion = mock_completion
-    
-    yield
+    # Patch LiteLLM completion
+    with patch("litellm.acompletion", new=mock_completion):
+        yield
 
 def test_parse_multi_urls_single():
     """Test parsing a single URL."""
@@ -140,7 +147,7 @@ def test_analyze_single_directory():
         result = runner.invoke(cli, [
             "analyze",
             "@mock_repo/dir1",
-            "--model-id", "openai/gpt-4o-mini"
+            "--model", "openai/gpt-4o-mini"
         ])
 
         assert result.exit_code == 0
@@ -164,7 +171,7 @@ def test_analyze_multiple_directories():
         result = runner.invoke(analyze, [
             "@mock_repo/dir1",
             "@mock_repo/dir2",
-            "--model-id", "openai/gpt-4o-mini",
+            "--model", "openai/gpt-4o-mini",
             "--output-dir", "test_output"
         ])
 
@@ -189,7 +196,7 @@ def test_analyze_with_combined_analysis():
         result = runner.invoke(analyze, [
             "@mock_repo/dir1",
             "@mock_repo/dir2",
-            "--model-id", "openai/gpt-4o-mini",
+            "--model", "openai/gpt-4o-mini",
             "--output-dir", "test_output",
             "--combined-analysis"
         ])
@@ -204,7 +211,7 @@ def test_analyze_command_with_invalid_multi_dirs():
         "analyze",
         "@nonexistent/dir1",
         "@nonexistent/dir2",
-        "--model-id", "openai/gpt-4o-mini"
+        "--model", "openai/gpt-4o-mini"
     ])
 
     assert result.exit_code == 0  # Command succeeds but warns about missing directories
@@ -216,7 +223,7 @@ def test_cli_error_handling():
     result = runner.invoke(cli, [
         "analyze",
         "@nonexistent/dir",
-        "--model-id", "openai/gpt-4o-mini"
+        "--model", "openai/gpt-4o-mini"
     ])
     assert result.exit_code == 0  # Command succeeds but warns about missing directory
     assert "Directory not found" in result.output
@@ -292,7 +299,7 @@ async def test_analyze_directories():
     # Test with real LLM call
     result = await analyze_directories(
         test_dirs,
-        model_id="openai/gpt-4o-mini",
+        model="openai/gpt-4o-mini",
         question="Analyze these directories and summarize their purpose"
     )
 
@@ -314,7 +321,7 @@ async def test_error_handling():
     with pytest.raises(ValueError):
         await analyze_directories(
             [],
-            model_id="openai/gpt-4o-mini",
+            model="openai/gpt-4o-mini",
             question="test"
         )
 
@@ -326,7 +333,7 @@ async def test_error_handling():
     with pytest.raises(litellm.NotFoundError):
         await analyze_directories(
             ["src/repomix"],
-            model_id="invalid-model",
+            model="openai/gpt-5",  # Using a non-existent GPT model name with prefix
             question="test"
         )
 

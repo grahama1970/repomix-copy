@@ -1,0 +1,14 @@
+{
+  "id": "chatcmpl-B7kBRmCrVU02xr88dEV2eIdoQHrK4",
+  "response": "The provided script is an AppleScript designed to be used as a script command in Raycast, a productivity application for macOS. Here's a breakdown of what the script does:\n\n1. **Title and Description**: The script is titled \"Copy Current Window URLs\" and is meant to copy all the URLs from the tabs of the currently active Safari window to the clipboard.\n\n2. **Functionality**:\n   - The script starts by telling the Safari application to perform actions.\n   - It checks the frontmost window of Safari to determine if it has any documents (i.e., if it is currently displaying content).\n   - If there are documents (tabs) open, it retrieves the URLs of all the tabs in that window.\n   - It formats this list of URLs by setting the text item delimiters to a line feed, effectively creating a newline-separated list of URLs.\n   - This list is then set to the clipboard, allowing the user to easily paste the copied URLs elsewhere.\n   - Lastly, it logs the action by outputting \"Copied\" in the console.\n\n3. **Metadata**: The script includes metadata for integration with Raycast, such as the schema version, mode (silent), package name, and author information.\n\nIn summary, this script automates the process of copying all the URLs from the tabs of the current Safari window to the clipboard, which can be useful for sharing or saving links.",
+  "metadata": {
+    "model": "gpt-4o-mini-2024-07-18",
+    "request_id": "47133fdb-ef89-4591-9b5b-f342e6e83bfd",
+    "cache_hit": false
+  },
+  "usage": {
+    "completion_tokens": 285,
+    "prompt_tokens": 277,
+    "total_tokens": 562
+  }
+}

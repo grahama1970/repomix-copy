@@ -207,7 +207,7 @@ async def analyze_directory(
         
     if response:
         output_file = os.path.join(output_dir, f"{dir_path.name}_analysis.json")
-        save_json(output_file, response.dict())
+        save_json(output_file, response.model_dump())
         return response.usage.total_tokens
         
     return 0
@@ -248,6 +248,6 @@ async def analyze_directories_combined(
     
     if result["combined"]:
         output_file = os.path.join(output_dir, "combined_analysis.json")
-        save_json(output_file, result["combined"].dict())
+        save_json(output_file, result["combined"].model_dump())
         
     return int(result["total_tokens"]) 

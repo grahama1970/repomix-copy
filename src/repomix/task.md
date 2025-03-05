@@ -194,46 +194,60 @@ src/repomix/
   - Structured response validation
   - Token usage tracking
 
+### Warning Handling
+The tool uses a structured approach to handle warnings:
+
+1. **Pydantic Deprecation Warnings**
+   ```python
+   # In pytest.ini or conftest.py
+   filterwarnings =
+       ignore:Support for class-based.*:DeprecationWarning:pydantic.*
+       ignore:.*config.* is deprecated.*:DeprecationWarning:pydantic.*
+   ```
+
+2. **Asyncio Runtime Warnings**
+   ```python
+   filterwarnings =
+       ignore:coroutine.*was never awaited:RuntimeWarning:asyncio.*
+   ```
+
+3. **Pytest Asyncio Warnings**
+   ```ini
+   [pytest]
+   asyncio_mode = auto
+   asyncio_default_fixture_loop_scope = function
+   ```
+
 ### Async Testing and Click Integration
 Key implementation patterns for async Click commands:
 
-1. **Click Command Decoration**
+1. **Async Generator Handling**
    ```python
-   @cli.command()
-   @click.argument("repo_dir", type=click.Path(exists=True))
-   @async_command  # Must be the innermost decorator
-   async def command_name(...):
-       # Async implementation
+   @pytest.fixture
+   async def repo_setup():
+       """Set up repository and clean up after test."""
+       try:
+           yield repo_dir, target_dir
+       finally:
+           cleanup_repository(repo_dir)  # Always cleanup
    ```
 
-2. **Event Loop Management**
-   - Use a single event loop at the entry point
-   - Let Click's command invocation handle the loop
-   - Avoid nested event loops or multiple `asyncio.run()` calls
-   - The `@async_command` decorator manages event loops for Click commands
-
-3. **Testing Async Commands**
-   - Use `CliRunner` for Click command testing
-   - No need to await `runner.invoke()` - it handles async internally
-   - Example:
+2. **Type Assertions for Response Handling**
    ```python
-   def test_async_command(tmp_path):
-       runner = CliRunner()
-       result = runner.invoke(cli, ["command", "--arg", "value"])
-       assert result.exit_code == 0
+   # When handling mixed response types
+   assert not isinstance(response, AsyncGenerator)
+   llm_response: LLMResponse = response  # type: ignore
    ```
 
-4. **Model Testing**
-   - Use real LiteLLM model IDs in tests (e.g., "openai/gpt-4")
-   - Avoid mocking unless absolutely necessary
-   - Test both streaming and non-streaming responses
-   - Handle API errors and retries in tests
-
-5. **Common Pitfalls to Avoid**
-   - Don't use `asyncio.run()` inside Click commands
-   - Don't nest async functions inside sync Click commands
-   - Don't await `CliRunner.invoke()` in tests
-   - Don't mix sync and async contexts unnecessarily
+3. **Proper Cleanup in Tests**
+   ```python
+   @pytest.fixture(scope="function")
+   def initialize_cache():
+       """Initialize Redis cache for each test."""
+       initialize_litellm_cache()
+       yield
+       litellm.cache = None  # Clean up after test
+   ```
 
 ## Response Format
 The tool provides structured responses using Pydantic V2 models:

@@ -14,7 +14,16 @@ import time
 import os
 import sys
 import json
+import warnings
 from pydantic import BaseModel, ConfigDict, Field
+
+# Filter out Pydantic deprecation warnings from dependencies
+warnings.filterwarnings(
+    "ignore",
+    message="Support for class-based.*",
+    category=DeprecationWarning,
+    module="pydantic.*"
+)
 
 from repomix.utils.git import parse_github_url, clone_repository, cleanup_repository, is_github_url, parse_multi_urls, clone_github_repo
 from repomix.utils.analyzer import analyze_directory, analyze_directories_combined, analyze_single_directory, analyze_multiple_directories_combined
@@ -171,14 +180,14 @@ def async_command(f):
 @cli.command()
 @click.argument("repo_dir")
 @click.argument("question")
-@click.option("--model-id", required=True, help="LiteLLM model ID to use")
+@click.option("--model", required=True, help="LiteLLM model name to use")
 @click.option("--stream", is_flag=True, help="Stream the response")
 @async_command
-async def ask(repo_dir: str, question: str, model_id: str, stream: bool):
+async def ask(repo_dir: str, question: str, model: str, stream: bool):
     """Ask a question about a repository or directory."""
     click.echo(f"Starting analysis of repository: {repo_dir}", err=True)
     click.echo(f"Question: {question}", err=True)
-    click.echo(f"Using model: {model_id}", err=True)
+    click.echo(f"Using model: {model}", err=True)
 
     try:
         # Check if directory exists before proceeding
@@ -195,7 +204,7 @@ async def ask(repo_dir: str, question: str, model_id: str, stream: bool):
 
         # Process directory
         response = await query_model(
-            model=model_id,
+            model=model,
             content=f"Analyze this repository and answer: {question}\n\nRepository: {repo_path}",
             system_prompt="You are a helpful assistant analyzing code repositories.",
             stream=stream
@@ -213,10 +222,11 @@ async def ask(repo_dir: str, question: str, model_id: str, stream: bool):
             # Handle non-streaming response
             if isinstance(response, str):
                 click.echo(response)
-            elif hasattr(response, "response"):
+            elif isinstance(response, LLMResponse):  # Type check for LLMResponse
                 click.echo(response.response)
-                click.echo(f"Response tokens: {response.usage.total_tokens}", err=True)
-                click.echo(f"\nTokens used: {response.usage.total_tokens}")
+                if hasattr(response, "usage"):  # Check if usage exists
+                    click.echo(f"Response tokens: {response.usage.total_tokens}", err=True)
+                    click.echo(f"\nTokens used: {response.usage.total_tokens}")
 
     except Exception as e:
         logger.error("Fatal error during processing", exc_info=True)
@@ -224,20 +234,20 @@ async def ask(repo_dir: str, question: str, model_id: str, stream: bool):
 
 @cli.command()
 @click.argument('urls', nargs=-1, required=True)
-@click.option('--model-id', required=True, help='LiteLLM model ID to use')
+@click.option('--model', required=True, help='LiteLLM model name to use')
 @click.option('--output-dir', default='output', help='Output directory for analysis results')
 @click.option('--ignore-patterns', multiple=True, help='Patterns to ignore during analysis')
 @click.option('--system-prompt', help='Custom system prompt for the LLM')
 @click.option('--max-tokens', type=int, help='Maximum tokens for LLM response')
 @click.option('--combined-analysis', is_flag=True, help='Analyze all directories together')
 @async_command
-async def analyze(urls: Tuple[str, ...], model_id: str, output_dir: str,
+async def analyze(urls: Tuple[str, ...], model: str, output_dir: str,
            ignore_patterns: Tuple[str, ...], system_prompt: Optional[str],
            max_tokens: Optional[int], combined_analysis: bool):
     """Analyze GitHub repositories or local directories.
 
     URLS can be GitHub repository URLs or local directory paths, prefixed with @.
-    Example: repomix analyze @path/to/repo1 @path/to/repo2 --model-id openai/gpt-4
+    Example: repomix analyze @path/to/repo1 @path/to/repo2 --model gpt-4
     """
     try:
         # Create output directory
@@ -268,7 +278,7 @@ async def analyze(urls: Tuple[str, ...], model_id: str, output_dir: str,
                     tokens = await analyze_directories_combined(
                         [Path(repo_dir) / d for d in multi_info.target_dirs],
                         output_dir,
-                        model_id,
+                        model,
                         ignore_list,
                         system_prompt,
                         max_tokens
@@ -283,7 +293,7 @@ async def analyze(urls: Tuple[str, ...], model_id: str, output_dir: str,
                         tokens = await analyze_directory(
                             dir_path,
                             output_dir,
-                            model_id,
+                            model,
                             ignore_list,
                             system_prompt,
                             max_tokens
@@ -291,7 +301,7 @@ async def analyze(urls: Tuple[str, ...], model_id: str, output_dir: str,
                         total_tokens += tokens
             finally:
                 # Clean up cloned repository
-                cleanup_repository(repo_dir)
+                cleanup_repository(Path(repo_dir))  # Convert to Path
         else:
             # Process local directories
             dirs_to_analyze = [Path(url.lstrip('@')) for url in urls]
@@ -306,7 +316,7 @@ async def analyze(urls: Tuple[str, ...], model_id: str, output_dir: str,
                 tokens = await analyze_directories_combined(
                     existing_dirs,
                     output_dir,
-                    model_id,
+                    model,
                     ignore_list,
                     system_prompt,
                     max_tokens
@@ -320,7 +330,7 @@ async def analyze(urls: Tuple[str, ...], model_id: str, output_dir: str,
                     tokens = await analyze_directory(
                         dir_path,
                         output_dir,
-                        model_id,
+                        model,
                         ignore_list,
                         system_prompt,
                         max_tokens

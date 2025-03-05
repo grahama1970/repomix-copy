@@ -8,13 +8,13 @@ Supports both single directory analysis and multi-directory analysis.
 
 Usage:
     # Single directory analysis
-    repomix ask path/to/repo "What does this code do?" --model-id gpt-4o-mini
+    repomix ask path/to/repo "What does this code do?" --model gpt-4o-mini
 
     # Multiple directory analysis
     repomix analyze \\
         "@path/to/repo/dir1" \\
         "@path/to/repo/dir2" \\
-        --model-id gpt-4o-mini \\
+        --model gpt-4o-mini \\
         --combined-analysis
 
 For more information, run:

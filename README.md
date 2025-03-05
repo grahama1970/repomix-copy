@@ -20,50 +20,64 @@ uv pip install -r requirements.txt
 
 ## Usage
 
+### Basic Repository Analysis
 ```bash
-python repomix_v2.py --repo /path/to/repo [OPTIONS]
+# Analyze a GitHub repository directory
+repomix ask https://github.com/raycast/script-commands/tree/master/commands/browsing \
+    "What do these scripts do?" \
+    --model openai/gpt-4o-mini
+
+# Analyze a local directory
+repomix ask ./my-project \
+    "Explain the main functionality of this code" \
+    --model openai/gpt-4o-mini \
+    --stream  # Optional: stream the response in real-time
 ```
 
-### Options
-
-- `--repo PATH`: Path to repository directory (required)
-- `--include PATTERN`: Glob pattern for files to include (default: *)
-- `--exclude PATTERN`: Comma-separated glob patterns for files to exclude
-- `--depth NUMBER`: Maximum depth of child directories to include
-- `--output FILE`: Output JSON file name (default: output.json)
-
-### Example
-
-```bash
-python repomix_v2.py --repo ./my-project --include "*.py,*.js" --exclude "tests/*,*.pyc" --depth 2 --output repo_contents.json
-```
-
-## Output Format
-
-The tool generates a JSON file with the following structure:
-
+### Example Output
 ```json
 {
-  "repository": "/path/to/repo",
-  "include_pattern": "*.py,*.js",
-  "exclude_pattern": "tests/*,*.pyc",
-  "depth": 2,
-  "total_token_count": 1234,
-  "files": [
-    {
-      "path": "file1.py",
-      "content": "...",
-      "token_count": 567
-    },
-    {
-      "path": "file2.js",
-      "content": "...",
-      "token_count": 890
-    }
-  ]
+  "id": "resp-2024-03-05-123456",
+  "response": "These scripts are a collection of Raycast browser automation commands that:\n1. Manage browser windows and tabs\n2. Handle bookmarks and history\n3. Provide privacy features like clearing data\n4. Automate common browsing tasks",
+  "metadata": {
+    "model": "openai/gpt-4o-mini",
+    "request_id": "req-abc-123",
+    "cache_hit": false
+  },
+  "usage": {
+    "completion_tokens": 128,
+    "prompt_tokens": 512,
+    "total_tokens": 640
+  }
 }
 ```
 
-## Logging
+### Multiple Directory Analysis
+```bash
+# Note: Use @ prefix for paths in analyze command
+repomix analyze \
+    @https://github.com/raycast/script-commands/tree/master/commands/browsing \
+    @https://github.com/raycast/script-commands/tree/master/commands/developer-utils \
+    --model openai/gpt-4o-mini \
+    --combined-analysis
 
-Logs are written to `repomix.log` with rotation at 10MB. 
+# Local directories also need @ prefix
+repomix analyze \
+    @./project/src \
+    @./project/tests \
+    --model openai/gpt-4o-mini \
+    --combined-analysis
+```
+
+### Advanced Options
+
+For both `ask` and `analyze` commands:
+- `--model`: LLM model name with provider prefix (e.g., openai/gpt-4, anthropic/claude-3)
+- `--stream`: Stream the response in real-time (ask command only)
+- `--output-dir`: Specify output directory (default: output/)
+- `--ignore-patterns`: Patterns to ignore (e.g., "*.pyc,*.log")
+- `--system-prompt`: Custom system prompt for the LLM
+- `--max-tokens`: Maximum tokens for LLM response
+
+### Legacy File Processing
+```

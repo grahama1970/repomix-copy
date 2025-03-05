@@ -54,9 +54,10 @@ async def repo_setup():
         branch = "master"
     repo_dir = clone_repository(repo_url, branch)
     
-    yield repo_dir, target_dir
-    
-    cleanup_repository(repo_dir)
+    try:
+        yield repo_dir, target_dir
+    finally:
+        cleanup_repository(repo_dir)
 
 
 @pytest.fixture(scope="function")

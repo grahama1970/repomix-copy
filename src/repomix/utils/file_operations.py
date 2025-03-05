@@ -53,22 +53,15 @@ def collect_files(
     directory = Path(directory)
     if not directory.exists():
         raise FileNotFoundError(f"Directory not found: {directory}")
-        
-    ignore_patterns = ignore_patterns or []
-    collected_files = []
     
-    for root, _, files in os.walk(directory):
-        for file in files:
-            file_path = Path(root) / file
-            relative_path = file_path.relative_to(directory)
-            
-            # Check if file matches any ignore pattern
-            if any(relative_path.match(pattern) for pattern in ignore_patterns):
+    files = []
+    for root, _, filenames in os.walk(directory):
+        for filename in filenames:
+            file_path = Path(root) / filename
+            if ignore_patterns and any(file_path.match(pattern) for pattern in ignore_patterns):
                 continue
-                
-            collected_files.append(file_path)
-            
-    return sorted(collected_files)
+            files.append(file_path)
+    return files
 
 def ensure_directory(directory: Union[str, Path]) -> Path:
     """Ensure a directory exists and return its Path."""
@@ -112,6 +105,7 @@ def is_binary_file(file_path: Union[str, Path]) -> bool:
         return True  # Assume binary if we can't read the file
 
 def get_file_extension(file_path: Union[str, Path]) -> str:
+    """Get file extension without the dot."""
     """Get file extension (lowercase, without dot)."""
     return os.path.splitext(str(file_path))[1].lower().lstrip('.')
 

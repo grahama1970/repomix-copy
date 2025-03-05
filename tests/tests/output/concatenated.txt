@@ -3,7 +3,7 @@ total_tokens: 0
 file_count: 1
 repository: https://github.com/raycast/script-commands/tree/master/commands/browsing
 target_directory: /commands/browsing
-generated: 2025-03-05T10:16:19.050535
+generated: 2025-03-05T09:38:45.098590
 
 File: commands/browsing/safari-current-window-urls.applescript
 #!/usr/bin/osascript

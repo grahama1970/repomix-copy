@@ -5,6 +5,21 @@ import tempfile
 from pathlib import Path
 from loguru import logger
 import sys
+import warnings
+
+# Filter Pydantic deprecation warnings
+warnings.filterwarnings(
+    "ignore",
+    message="Support for class-based.*",
+    category=DeprecationWarning,
+    module="pydantic.*"
+)
+warnings.filterwarnings(
+    "ignore",
+    message=".*config.* is deprecated.*",
+    category=DeprecationWarning,
+    module="pydantic.*"
+)
 
 # Configure test logging
 LOG_FORMAT = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | <level>{message}</level> | {extra}"

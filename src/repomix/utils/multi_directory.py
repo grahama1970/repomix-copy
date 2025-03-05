@@ -81,7 +81,7 @@ async def combine_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
 
 async def analyze_directories(
     directories: List[str],
-    model_id: str,
+    model: str,
     question: str,
     repo_url: str = "",
     target_dir: str = "",
@@ -91,7 +91,7 @@ async def analyze_directories(
     
     Args:
         directories: List of directory paths to analyze.
-        model_id: ID of the model to use for analysis.
+        model: Name of the model to use for analysis.
         question: Question to ask about the directories.
         repo_url: Optional repository URL for context.
         target_dir: Optional target directory path for context.
@@ -102,7 +102,7 @@ async def analyze_directories(
         
     Raises:
         ValueError: If directories list is empty or contains invalid directories.
-        litellm.NotFoundError: If the model ID is invalid.
+        litellm.NotFoundError: If the model is invalid.
         litellm.BadRequestError: If there's an issue with the model request.
     """
     # Validate input
@@ -123,23 +123,23 @@ async def analyze_directories(
         combined = await combine_results(results)
         system_prompt = f"Analyze these directories and answer: {question}"
         try:
-            response = await query_model(model_id, combined["content"], system_prompt)
+            response = await query_model(model, combined["content"], system_prompt)
             return {
                 "files": combined["files"],
                 "analysis": response,
                 "is_combined": True
             }
         except Exception as e:
-            logger.error(f"Error querying model {model_id} for combined analysis: {type(e).__name__}: {str(e)}")
+            logger.error(f"Error querying model {model} for combined analysis: {type(e).__name__}: {str(e)}")
             logger.debug(f"Analysis context: combined_files={len(combined['files'])}, content_length={len(combined['content'])}")
             # Re-raise litellm exceptions directly
             if isinstance(e, litellm.exceptions.NotFoundError):
-                logger.error(f"Invalid model ID: {model_id}")
+                logger.error(f"Invalid model: {model}")
                 raise
             if isinstance(e, litellm.exceptions.BadRequestError):
-                logger.error(f"Bad request to model {model_id}: {str(e)}")
+                logger.error(f"Bad request to model {model}: {str(e)}")
                 raise
-            raise ValueError(f"Error with model {model_id}: {str(e)}")
+            raise ValueError(f"Error with model {model}: {str(e)}")
     else:
         # Analyze each directory separately
         analysis_tasks = []
@@ -147,19 +147,19 @@ async def analyze_directories(
             if result["content"]:
                 system_prompt = f"Analyze this directory and answer: {question}"
                 try:
-                    task = query_model(model_id, result["content"], system_prompt)
+                    task = query_model(model, result["content"], system_prompt)
                     analysis_tasks.append(task)
                 except Exception as e:
-                    logger.error(f"Error querying model {model_id} for directory analysis: {type(e).__name__}: {str(e)}")
+                    logger.error(f"Error querying model {model} for directory analysis: {type(e).__name__}: {str(e)}")
                     logger.debug(f"Analysis context: files={len(result['files'])}, content_length={len(result['content'])}")
                     # Re-raise litellm exceptions directly
                     if isinstance(e, litellm.exceptions.NotFoundError):
-                        logger.error(f"Invalid model ID: {model_id}")
+                        logger.error(f"Invalid model: {model}")
                         raise
                     if isinstance(e, litellm.exceptions.BadRequestError):
-                        logger.error(f"Bad request to model {model_id}: {str(e)}")
+                        logger.error(f"Bad request to model {model}: {str(e)}")
                         raise
-                    raise ValueError(f"Error with model {model_id}: {str(e)}")
+                    raise ValueError(f"Error with model {model}: {str(e)}")
         
         try:
             analyses = await asyncio.gather(*analysis_tasks)
@@ -178,9 +178,9 @@ async def analyze_directories(
             logger.error(f"Error during parallel analysis: {type(e).__name__}: {str(e)}")
             # Re-raise litellm exceptions directly
             if isinstance(e, litellm.exceptions.NotFoundError):
-                logger.error(f"Invalid model ID: {model_id}")
+                logger.error(f"Invalid model: {model}")
                 raise
             if isinstance(e, litellm.exceptions.BadRequestError):
-                logger.error(f"Bad request to model {model_id}: {str(e)}")
+                logger.error(f"Bad request to model {model}: {str(e)}")
                 raise
             raise ValueError(f"Analysis failed: {str(e)}") 

@@ -4,7 +4,7 @@ from pathlib import Path
 import json
 from repomix.utils.git import parse_github_url, clone_repository, cleanup_repository
 from repomix.utils.parser import glob_files, concatenate_files
-from repomix.utils.llm import query_model, save_response
+from repomix.utils.llm import query_model, save_response, LLMResponse
 from click.testing import CliRunner
 from repomix.cli import cli
 
@@ -49,7 +49,8 @@ async def test_basic_url_workflow():
         
         # Save and verify real response
         response_path = output_dir / "response.json"
-        save_response(response, response_path)
+        if isinstance(response, LLMResponse):  # Handle the Union type
+            save_response(response, str(response_path))  # Convert Path to str
         
         # Verify response structure
         response_data = json.loads(response_path.read_text())
@@ -73,7 +74,7 @@ def test_ask_command():
         "ask",
         str(test_dir),
         "What does this code do?",
-        "--model-id", TEST_MODEL
+        "--model", TEST_MODEL
     ])
     
     # Verify actual command behavior
@@ -89,7 +90,7 @@ def test_ask_error_handling():
         "ask",
         "/nonexistent/path",
         "What does the code do?",
-        "--model-id", TEST_MODEL
+        "--model", TEST_MODEL
     ])
     
     # Verify real error message
