@@ -1,0 +1,65 @@
+# Command Validation Rules
+
+## Pre-Command Validation Rules
+
+**1. Command Validation Rule**
+- **Type:** `command_validation`
+- **Condition:** `before_any_command`
+- **Action:** `validate_command`
+- **Message:**
+  Before executing ANY command:
+  1. MUST check these rules in order:
+     - Check UV rules for package management
+     - Check testing practices for test commands
+     - Check package usage for implementations
+     - Check design patterns for patterns
+  2. MUST document which rules were checked
+  3. MUST explain how command complies with rules
+  
+  **Example Validation:**
+  ```python
+  # Before command execution:
+  # 1. Checked rules:
+  #    - 006-uv-commands.mdc: Using uv add instead of pip
+  #    - 004-testing-practices.mdc: Following test organization
+  #    - 003-package-usage.mdc: Using existing implementations
+  # 2. Command complies because:
+  #    - Uses uv instead of pip
+  #    - Follows testing patterns
+  #    - Uses existing utilities
+  ```
+
+**2. Command Blocking Rule**
+- **Type:** `command_validation`
+- **Condition:** `command_execution`
+- **Action:** `block_invalid_commands`
+- **Message:**
+  MUST block command execution if:
+  1. Rules have not been checked
+  2. Command violates any rule
+  3. Validation is not documented
+  
+  **Example Blocking:**
+  ```python
+  # Command blocked:
+  # - Rules not checked: 006-uv-commands.mdc
+  # - Violation: Using pip instead of uv
+  # - Action: Command not executed
+  ```
+
+## Best Practices
+
+1. **Rule Checking:**
+   - Check ALL relevant rules before commands
+   - Document which rules were checked
+   - Explain how command complies
+
+2. **Command Validation:**
+   - Block commands that violate rules
+   - Provide clear violation explanations
+   - Suggest correct command format
+
+3. **Documentation:**
+   - Document rule compliance
+   - Record which rules were checked
+   - Explain any exceptions 

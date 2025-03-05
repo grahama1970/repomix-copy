@@ -1,0 +1,102 @@
+# Async Patterns and Testing Rules
+
+## Click Async Command Pattern
+
+**1. Click Async Command Rule**
+- **Type:** `code_pattern`
+- **Condition:** `click_async_command`
+- **Action:** `use_async_command_pattern`
+- **Message:**
+  When implementing async Click commands:
+  1. ALWAYS use this pattern:
+     ```python
+     @cli.command()
+     @click.argument("arg_name", type=click.Path(exists=True))
+     @async_command  # Must be innermost decorator
+     async def command_name(arg_name: str) -> None:
+         """Command docstring."""
+         try:
+             # Async implementation
+             result = await async_operation()
+         except Exception as e:
+             raise click.ClickException(str(e))
+  2. DO NOT:
+     - Use asyncio.run() inside commands
+     - Nest async functions inside sync commands
+     - Mix sync and async contexts unnecessarily
+
+## Event Loop Management
+
+**2. Event Loop Rule**
+- **Type:** `code_pattern`
+- **Condition:** `event_loop_management`
+- **Action:** `use_single_event_loop`
+- **Message:**
+  When managing event loops:
+  1. ALWAYS:
+     - Use a single event loop at the entry point
+     - Let Click's command invocation handle the loop
+     - Use the @async_command decorator for async commands
+  2. DO NOT:
+     - Create multiple event loops
+     - Use asyncio.run() inside commands
+     - Nest event loops
+
+## Testing Async Code
+
+**3. Async Testing Rule**
+- **Type:** `code_pattern`
+- **Condition:** `async_testing`
+- **Action:** `use_click_runner`
+- **Message:**
+  When testing async Click commands:
+  1. ALWAYS use this pattern:
+     ```python
+     def test_command(tmp_path):
+         runner = CliRunner()
+         result = runner.invoke(cli, [
+             "command",
+             "--arg", "value"
+         ])
+         assert result.exit_code == 0
+     ```
+  2. DO NOT:
+     - Await runner.invoke()
+     - Create event loops in tests
+     - Mix sync and async contexts
+
+## LLM Testing
+
+**4. LLM Testing Rule**
+- **Type:** `code_pattern`
+- **Condition:** `llm_testing`
+- **Action:** `use_real_llm_ids`
+- **Message:**
+  When testing LLM integrations:
+  1. ALWAYS:
+     - Use real LiteLLM model IDs (e.g., "openai/gpt-4")
+     - Test both streaming and non-streaming responses
+     - Handle API errors and retries
+  2. DO NOT:
+     - Mock LLM responses unless absolutely necessary
+     - Use invalid model IDs in tests
+     - Skip error handling tests
+
+## Best Practices
+
+1. **Command Structure:**
+   - Keep async commands focused and single-purpose
+   - Handle errors with Click's exception system
+   - Use proper type hints and docstrings
+
+2. **Testing:**
+   - Test both success and error paths
+   - Use temporary directories for file operations
+   - Clean up resources in tests
+   - Test with real model IDs
+
+3. **Error Handling:**
+   - Use Click's exception system
+   - Provide clear error messages
+   - Clean up resources in finally blocks
+   - Log errors appropriately 

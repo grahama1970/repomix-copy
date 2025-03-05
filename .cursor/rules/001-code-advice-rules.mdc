@@ -1,0 +1,209 @@
+---
+description: "Project Code Advice Rules for AI Code Generation"
+globs: 
+alwaysApply: false
+---
+
+# Code Advice Rules
+
+## Quality and Documentation Rules
+
+**1. Code Advice Rule**  
+- **Type:** `code_advice`  
+- **Condition:** `contains_deprecated_methods`  
+- **Action:** `verify_against_documentation`  
+- **Message:**  
+  Never suggest code without verifying each method/function against official documentation to ensure methods are not deprecated. Always provide a link to the specific documentation. If you do not have a link, do not suggest a solution. Instead, ask the user to provide a documentation link, or ask what you need to provide a solution.
+
+**2. Documentation First Rule**  
+- **Type:** `documentation_first`  
+- **Condition:** `always`  
+- **Action:** `check_existing_solutions`  
+- **Message:**  
+  ALWAYS check official documentation before suggesting any solution. Follow these steps:  
+  1. Search for existing solutions in the official documentation.  
+  2. If a documented solution exists, use it instead of creating a new one.  
+  3. Only suggest custom solutions when you can explicitly demonstrate that:  
+     - The functionality doesn't exist in official libraries/frameworks,  
+     - The documented solution doesn't meet specific requirements, or  
+     - There's a clear performance or functionality benefit.  
+  4. When suggesting a solution, always:  
+     - Link to relevant documentation,  
+     - Explain why existing solutions were not used (if creating a custom solution), and  
+     - Show the documentation-based solution first.  
+  The burden of proof is on justifying custom solutions, not on using documented ones.
+
+**3. Confidence Rule**  
+- **Type:** `confidence`  
+- **Condition:** `always`  
+- **Action:** `include_confidence_level`  
+- **Message:**  
+  Always provide a confidence level for any code suggestions or solutions.
+
+## Architecture and Design Rules
+
+**4. Simplicity Rule**  
+- **Type:** `simplicity`  
+- **Condition:** `always`  
+- **Action:** `prefer_simplest_solution`  
+- **Message:**  
+  Always prioritize the simplest solution to a problem, avoiding over-engineering. Default to functions instead of classes unless state management or package requirements necessitate a class architecture.
+
+**5. Architecture Rule**  
+- **Type:** `architecture`  
+- **Condition:** `always`  
+- **Action:** `prefer_functional_approach`  
+- **Message:**  
+  NEVER suggest or implement class-based architecture unless you can explicitly demonstrate ONE of these conditions:  
+  1. State management that would be significantly more complex with functions,  
+  2. Resource lifecycle management that would be unwieldy with functions,  
+  3. Performance requirements that specifically benefit from maintained state, or  
+  4. Interface contracts that require encapsulation.  
+  The burden of proof is on justifying class usage, not functions. When in doubt, use functions.
+
+**6. Code Example Rule**  
+- **Type:** `code_example`  
+- **Condition:** `always`  
+- **Action:** `use_provided_example`  
+- **Message:**  
+  If a code example is referenced or provided, use that example as the basis for your code. DO NOT create a separate solution unless authorized to do so.
+
+## Implementation Rules
+
+**7. Logging Rule**  
+- **Type:** `logging`  
+- **Condition:** `always`  
+- **Action:** `use_loguru`  
+- **Message:**  
+  Always use loguru for logging in all scripts. Implement reasonable error handling with appropriate logging levels (DEBUG, INFO, WARNING, ERROR, CRITICAL) based on the situation.
+
+**8. Tool Availability Rule**  
+- **Type:** `tool_availability`  
+- **Condition:** `media_download_task`  
+- **Action:** `recommend_yt-dlp`  
+- **Message:**  
+  YT-DLP TOOL AVAILABLE: Use yt-dlp Python package for media downloading tasks.  
+  **Purpose:** Download videos/audio/metadata from 1000+ platforms (YouTube, TikTok, SoundCloud).  
+  **Use when:**  
+  • Downloading video/audio from URL  
+  • Extracting subtitles/thumbnails  
+  • Batch downloads (playlists/channels)  
+  • Format conversion (e.g., to MP3)  
+  **Key Features:**  
+  • Supports age-restricted/private content (with cookies)  
+  • Metadata extraction (title, views, duration)  
+  • Automatic rate limit handling  
+  **Examples:**  
+  • 'Download this YouTube video: [URL]'  
+  • 'Extract audio as MP3'  
+  **Dependency:** Ensure yt-dlp is installed via 'uv add yt-dlp'
+
+**9. Solution Validation Rule**  
+- **Type:** `solution_validation`  
+- **Condition:** `before_suggesting_solution`  
+- **Action:** `validate_necessity`  
+- **Message:**  
+  Before suggesting ANY solution, PROVE necessity by:  
+  1. FIRST showing the relevant documentation that proves a solution is needed,  
+  2. DEMONSTRATING that the existing library/framework does NOT already solve this,  
+  3. If suggesting additional code, answering:  
+     - Why isn't the built-in solution sufficient?  
+     - What specific problem are we solving?  
+     - Why can't this be solved with existing tools?  
+  4. If you cannot PROVE all the above points with documentation, DO NOT suggest the solution.  
+  No proof = No suggestion.
+
+## Tooling and Process Rules
+
+**10. Agent Tools Rule**  
+- **Type:** `agent_tools`  
+- **Condition:** `method_analysis_task`  
+- **Action:** `use_method_validator`  
+- **Message:**  
+  METHOD VALIDATOR TOOL AVAILABLE
+
+  When user requests: '[task description]'
+  You MUST:
+  1. Draft implementation (do not show)
+  2. Run:
+     method-validator package_name --list-all
+     For each method:
+     method-validator package_name --method method_name
+  3. Show verification results
+  4. Present code ONLY if verified
+  5. Include confirmation:
+     '✓ All methods verified
+      ✓ No duplication found'
+
+**11. Tool Dependencies Rule**  
+- **Type:** `tool_dependencies`  
+- **Condition:** `always`  
+- **Action:** `use_uv_build`  
+- **Message:**  
+  ALWAYS use uv build for tool dependencies. Each tool should:
+  1. Have its own pyproject.toml
+  2. List exact versions of dependencies
+  3. Be built with 'uv pip compile pyproject.toml'
+  4. Include a requirements.txt for reproducibility
+
+**12. Method Validation Workflow Rule**  
+- **Type:** `method_validation_workflow`  
+- **Condition:** `code_writing`  
+- **Action:** `validate_methods`  
+- **Message:**  
+  AGENT WORKFLOW:  
+  1. Draft code first,  
+  2. Extract methods to verify,  
+  3. Verify each method before presenting code,  
+  4. Check for duplicate functionality, and  
+  5. Only present verified code.
+
+**13. Testing Rule**  
+- **Type:** `testing`  
+- **Condition:** `code_changes`  
+- **Action:** `run_tests`  
+- **Message:**  
+  TESTING REQUIREMENTS:  
+  1. All code changes MUST have corresponding tests,  
+  2. AI MUST:  
+     a. Run tests BEFORE suggesting changes,  
+     b. Run tests IMMEDIATELY AFTER applying changes, and  
+     c. NEVER proceed without both test runs,  
+  3. Test steps:  
+     a. Run existing tests: `pytest tests/`,  
+     b. Add new tests for changes, and  
+     c. Verify both new and existing tests pass,  
+  4. Test coverage requirements:  
+     - Unit tests for all new functions,  
+     - Integration tests for feature changes, and  
+     - Edge case coverage,  
+  5. Testing guidelines:  
+     - Use pytest fixtures for setup,  
+     - Mock external dependencies,  
+     - Follow the AAA pattern (Arrange-Act-Assert), and  
+     - Keep tests focused and atomic,  
+  6. When suggesting changes:  
+     - Include test results in the explanation,  
+     - Reference specific test files/cases, and  
+     - Explain test coverage,  
+  7. Test failure protocol:  
+     a. If tests fail BEFORE changes: Document current failures,  
+     b. If tests fail AFTER changes: Revert changes or fix immediately.
+
+## Linter Error Prioritization
+- **Type:** `code_quality`
+- **Priority:** `low`
+- **Message:**
+  Linter errors should be treated as low priority when:
+  1. Core functionality is being developed
+  2. Tests are being written or fixed
+  3. Working code exists and is verified
+  4. The code is documented as VERIFIED WORKING in task.md
+  
+  Only address linter errors:
+  1. After core functionality is working
+  2. After all tests are passing
+  3. When not modifying verified working code
+  4. When the errors impact actual runtime behavior
+  
+  Never modify VERIFIED WORKING code just to fix linter errors. 

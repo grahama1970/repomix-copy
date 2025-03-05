@@ -1,0 +1,179 @@
+# Testing Practices
+
+## Core Testing Philosophy
+- **Type:** `testing_philosophy`
+- **Condition:** `all_tests`
+- **Action:** `test_real_functionality`
+- **Message:**
+  1. NEVER test for the sake of testing
+  2. ONLY test actual functionality that matters to users
+  3. AVOID mocks unless absolutely necessary
+  4. Focus on end-to-end workflows that reflect real usage
+  5. Use real external services (Redis, APIs) when possible
+  6. Only mock when:
+     - External service is unreliable/costly
+     - Service has strict rate limits
+     - Testing edge cases impossible to reproduce
+  7. Prefer integration tests over unit tests
+  8. Test actual user workflows over implementation details
+
+## Cache Testing Rules
+- **Type:** `cache_testing`
+- **Condition:** `cache_related_tests`
+- **Action:** `test_real_cache`
+- **Message:**
+  1. ALWAYS test with real Redis instance
+  2. Test actual cache hits/misses
+  3. Verify real data persistence
+  4. Test real fallback scenarios
+  5. NO mocking of cache operations
+  6. Test with real LLM responses
+
+## LLM Testing Rules
+- **Type:** `llm_testing`
+- **Condition:** `llm_related_tests`
+- **Action:** `test_real_llm`
+- **Message:**
+  1. Use real model IDs
+  2. Test actual API responses
+  3. Verify real token counting
+  4. Test streaming and non-streaming
+  5. Only mock if rate limits/costs are prohibitive
+
+## Error Testing Rules
+- **Type:** `error_testing`
+- **Condition:** `error_handling_tests`
+- **Action:** `test_real_errors`
+- **Message:**
+  1. Test with real error conditions
+  2. Use actual network failures
+  3. Test with real invalid inputs
+  4. Verify actual error messages
+  5. NO artificial error injection unless unavoidable
+
+## Test Organization Rules
+
+**1. Progressive Testing Rule**
+- **Type:** `test_organization`
+- **Condition:** `complex_test_task`
+- **Action:** `break_down_tests`
+- **Message:**
+  When implementing tests:
+  1. ALWAYS start with simple unit tests before complex integration tests
+  2. Break down complex tests into smaller, focused test functions
+  3. Follow this testing hierarchy:
+     - Basic unit tests
+     - Component integration tests
+     - Full integration tests
+  
+  **Example Structure:**
+  ```python
+  @pytest.mark.asyncio
+  async def test_basic_functionality():
+      """Test basic component functionality in isolation."""
+      pass
+
+  @pytest.mark.asyncio
+  async def test_component_integration():
+      """Test how components work together."""
+      pass
+
+  @pytest.mark.asyncio
+  async def test_full_integration():
+      """Test full system integration."""
+      pass
+  ```
+
+**2. Test Fixture Rule**
+- **Type:** `test_organization`
+- **Condition:** `test_setup_task`
+- **Action:** `use_fixtures`
+- **Message:**
+  When setting up test environments:
+  1. Use fixtures for reusable setup and teardown
+  2. Keep fixtures focused and minimal
+  3. Use fixture scopes appropriately
+  
+  **Example:**
+  ```python
+  @pytest.fixture(scope="function")
+  async def setup_component():
+      """Setup individual component for testing."""
+      component = await create_component()
+      yield component
+      await cleanup_component(component)
+  ```
+
+**3. Mock Response Rule**
+- **Type:** `test_organization`
+- **Condition:** `external_dependency_task`
+- **Action:** `use_mocks`
+- **Message:**
+  When testing external dependencies:
+  1. Start with mock responses
+  2. Use deterministic test data
+  3. Clearly separate mock tests from integration tests
+  
+  **Example:**
+  ```python
+  @pytest.mark.asyncio
+  async def test_with_mock():
+      """Test using mock responses."""
+      response = await acompletion(
+          model="gpt-3.5-turbo",
+          messages=[{"role": "user", "content": "test"}],
+          mock_response="mocked response"
+      )
+      assert response.choices[0].message.content == "mocked response"
+  ```
+
+**4. Parallel Testing Rule**
+- **Type:** `test_organization`
+- **Condition:** `test_performance`
+- **Action:** `use_parallel_testing`
+- **Message:**
+  When running tests:
+  1. ALWAYS use pytest-xdist for parallel execution
+  2. Configure optimal worker count based on CPU cores
+  3. Ensure tests are independent and can run in parallel
+  
+  **Configuration:**
+  ```python
+  # In pyproject.toml
+  [tool.pytest.ini_options]
+  addopts = "-n auto"  # Use optimal number of workers
+  ```
+  
+  **Example Usage:**
+  ```bash
+  # Run tests in parallel
+  pytest -n auto
+  
+  # Run with specific number of workers
+  pytest -n 4
+  ```
+
+## Best Practices
+
+1. **Test Organization:**
+   - One concept per test function
+   - Clear, descriptive test names
+   - Progressive complexity in test suite
+   - Run tests in parallel by default
+
+2. **Test Setup:**
+   - Minimize shared state
+   - Clean up after tests
+   - Use appropriate scopes for fixtures
+   - Ensure thread safety for parallel execution
+
+3. **Assertions:**
+   - One logical assertion per test
+   - Clear failure messages
+   - Test both positive and negative cases
+
+4. **Documentation:**
+   - Document test purpose
+   - Document test requirements
+   - Document any non-obvious test setup
+   - Note any parallel execution considerations 

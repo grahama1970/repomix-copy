@@ -1,0 +1,67 @@
+# Structured Inputs Rule
+
+## Overview
+- **Type:** `code_structure`
+- **Condition:** `api_integration`
+- **Action:** `use_pydantic_models`
+
+## Requirements
+
+1. **Always Use Structured Models**
+   - Create Pydantic models for all external API interactions
+   - Define clear field types and validations
+   - Use descriptive field documentation
+   - Include proper default values
+
+2. **Model Organization**
+   ```python
+   # Request models
+   class SomeRequest(BaseModel):
+       field: Type = Field(..., description="...")
+       optional_field: Optional[Type] = Field(default=None, description="...")
+   
+   # Response models
+   class SomeResponse(BaseModel):
+       data: Type = Field(..., description="...")
+       metadata: dict = Field(default_factory=dict)
+   ```
+
+3. **Validation Rules**
+   - Use Field constraints for validation
+   - Add custom validators when needed
+   - Include proper error messages
+   - Handle optional fields explicitly
+
+4. **Documentation**
+   - Document all fields with descriptions
+   - Include examples where helpful
+   - Note any constraints or limitations
+   - Document any side effects
+
+## Example Usage
+```python
+from pydantic import BaseModel, Field
+
+class APIRequest(BaseModel):
+    """Request model for external API."""
+    endpoint: str = Field(..., description="API endpoint")
+    method: str = Field(default="GET", pattern="^(GET|POST|PUT|DELETE)$")
+    params: dict = Field(default_factory=dict)
+    
+    class Config:
+        """Pydantic config."""
+        json_schema_extra = {
+            "example": {
+                "endpoint": "/api/v1/data",
+                "method": "GET",
+                "params": {"limit": 10}
+            }
+        }
+```
+
+## Benefits
+- Type safety and validation
+- Self-documenting code
+- Consistent API interfaces
+- Better error handling
+- IDE support and autocompletion 

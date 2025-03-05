@@ -1,0 +1,41 @@
+# Standard ignores
+.venv/
+.vscode/
+.env
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+**/archive/
+**/_archive/
+
+# Hugging Face specific
+models/
+tokenizers/
+snapshots/
+.checkpoint/
+.offline/
+
+# Data/logs
+data/
+logs/
+*.csv
+*.tsv
+*.jsonl
+
+# Experimental
+experiments/
+results/
+notebooks/
+
+# Large files
+*.pt
+*.bin
+*.h5
+*.zip
+*.tar.gz
+
+# Local development
+.DS_Store
+.idea/

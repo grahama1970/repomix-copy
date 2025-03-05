@@ -1,0 +1,143 @@
+---
+description: "Package usage rules and patterns for common snippets utilities"
+globs: ["**/*.py"]
+alwaysApply: true
+---
+# Package Usage Rules
+
+## Text Processing
+
+**1. Text Normalizer Rule**
+- **Type:** `package_usage`
+- **Condition:** `text_cleaning_task`
+- **Action:** `use_text_normalizer`
+- **Message:**
+  When implementing text cleaning or normalization:
+  1. ALWAYS use text_normalizer package for:
+     - Text standardization
+     - Profanity filtering
+     - Unicode normalization
+     - HTML cleaning
+  2. DO NOT implement custom solutions for:
+     - Character encoding
+     - Text sanitization
+     - Language detection
+     
+  **Configuration:**
+  ```python
+  from text_normalizer import normalize, TextNormalizerConfig
+  
+  # Basic usage
+  config = TextNormalizerConfig(mode="basic")
+  normalized = normalize(text, config)
+  
+  # Advanced usage
+  config = TextNormalizerConfig(
+      mode="advanced",
+      remove_profanity=True,
+      normalize_unicode=True,
+      clean_html=True
+  )
+  ```
+
+## Caching and Retries
+
+**2. Caching Tenacity Rule**
+- **Type:** `package_usage`
+- **Condition:** `retry_caching_task`
+- **Action:** `use_caching_tenacity`
+- **Message:**
+  When implementing retries with caching:
+  1. ALWAYS use caching_tenacity for:
+     - Automatic retries
+     - Result caching
+     - Error handling
+  2. DO NOT implement custom retry logic
+  
+  **Configuration:**
+  ```python
+  from snippets.caching_tenacity import cached_retry
+  
+  @cached_retry(
+      retries=3,
+      cache_ttl=3600,  # 1 hour
+      exceptions=(ConnectionError, TimeoutError)
+  )
+  async def fetch_data():
+      # Your code here
+      pass
+  ```
+
+## LLM Integration
+
+**3. LiteLLM Rule**
+- **Type:** `package_usage`
+- **Condition:** `llm_integration_task`
+- **Action:** `use_litellm`
+- **Message:**
+  When implementing LLM integrations:
+  1. ALWAYS use litellm for:
+     - Multi-provider LLM support
+     - Request caching
+     - Error handling
+     - Cost tracking
+  2. DO NOT implement custom LLM wrappers
+  
+  **Configuration:**
+  ```python
+  from snippets.litellm import get_completion
+  
+  response = await get_completion(
+      model="gpt-3.5-turbo",
+      messages=[{"role": "user", "content": "Hello!"}],
+      cache=True,
+      max_retries=3
+  )
+  ```
+
+## Embedding
+
+**4. Embedding Rule**
+- **Type:** `package_usage`
+- **Condition:** `vector_embedding_task`
+- **Action:** `use_embedding`
+- **Message:**
+  When implementing vector embeddings:
+  1. ALWAYS use embedding utilities for:
+     - Text to vector conversion
+     - Batch processing
+     - Provider management
+  2. DO NOT implement custom embedding logic
+  
+  **Configuration:**
+  ```python
+  from snippets.embedding import get_embeddings
+  
+  vectors = await get_embeddings(
+      texts=["text1", "text2"],
+      batch_size=10,
+      cache=True
+  )
+  ```
+
+## Best Practices
+
+1. **Package Selection:**
+   - Always prefer established utilities over custom solutions
+   - Use the most specific tool for the task
+   - Check for existing implementations in snippets first
+
+2. **Configuration:**
+   - Use type hints and validation
+   - Implement proper error handling
+   - Follow the package's recommended patterns
+
+3. **Integration:**
+   - Keep configurations centralized
+   - Use environment variables for sensitive data
+   - Implement proper logging with loguru
+
+4. **Performance:**
+   - Use batch processing when available
+   - Enable caching for expensive operations
+   - Monitor resource usage

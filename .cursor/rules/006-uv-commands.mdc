@@ -1,0 +1,92 @@
+# UV Command Rules
+
+## UV Package Management Rules
+
+**1. UV Sync Rule**
+- **Type:** `uv_command`
+- **Condition:** `package_installation`
+- **Action:** `use_uv_sync`
+- **Message:**
+  When installing dependencies:
+  1. ALWAYS use `uv sync` to install dependencies from pyproject.toml
+  2. NEVER use pip install or uv pip commands
+  3. NEVER manually edit requirements.txt
+  
+  **Correct Usage:**
+  ```bash
+  uv sync  # Installs all dependencies from pyproject.toml
+  ```
+  
+  **Incorrect Usage:**
+  ```bash
+  uv pip sync requirements.txt  # Wrong - don't use pip commands
+  uv pip install package  # Wrong - don't install individual packages
+  pip install -r requirements.txt  # Wrong - don't use pip
+  ```
+
+**2. UV Add Rule**
+- **Type:** `uv_command`
+- **Condition:** `adding_dependency`
+- **Action:** `use_uv_add`
+- **Message:**
+  When adding new dependencies:
+  1. ALWAYS use `uv add` to add new packages
+  2. NEVER manually edit pyproject.toml
+  3. Let UV handle version resolution
+  
+  **Correct Usage:**
+  ```bash
+  uv add package  # Adds package and updates pyproject.toml
+  uv add package==1.2.3  # Adds specific version
+  ```
+  
+  **Incorrect Usage:**
+  ```bash
+  pip install package  # Wrong - don't use pip
+  uv pip install package  # Wrong - don't use pip commands
+  # Wrong - don't manually edit pyproject.toml
+  ```
+
+**3. UV Remove Rule**
+- **Type:** `uv_command`
+- **Condition:** `removing_dependency`
+- **Action:** `use_uv_remove`
+- **Message:**
+  When removing dependencies:
+  1. ALWAYS use `uv remove` to remove packages
+  2. NEVER manually edit pyproject.toml
+  
+  **Correct Usage:**
+  ```bash
+  uv remove package  # Removes package and updates pyproject.toml
+  ```
+  
+  **Incorrect Usage:**
+  ```bash
+  pip uninstall package  # Wrong - don't use pip
+  # Wrong - don't manually edit pyproject.toml
+  ```
+
+## Best Practices
+
+1. **Dependency Management:**
+   - Always use `uv sync` for installing dependencies
+   - Use `uv add` for adding new packages
+   - Use `uv remove` for removing packages
+   - Let UV handle version resolution and conflicts
+
+2. **File Handling:**
+   - Never manually edit requirements.txt
+   - Never manually edit dependency versions in pyproject.toml
+   - Let UV manage all package-related files
+
+3. **Command Usage:**
+   - Avoid using any pip commands
+   - Avoid using `uv pip` commands
+   - Use simple, direct UV commands
+   - Let UV handle virtual environment management
+
+4. **Version Control:**
+   - Always commit both pyproject.toml and requirements.txt
+   - Let UV handle version resolution
+   - Use UV's lockfile for reproducible builds 

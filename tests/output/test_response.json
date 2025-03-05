@@ -1,0 +1,12 @@
+{
+  "id": "test-123",
+  "response": "Test response",
+  "metadata": {
+    "model": "gpt-3.5-turbo"
+  },
+  "usage": {
+    "completion_tokens": 10,
+    "prompt_tokens": 20,
+    "total_tokens": 30
+  }
+}

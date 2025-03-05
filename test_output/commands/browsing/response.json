@@ -1,0 +1,20 @@
+{
+  "response": {
+    "id": "chatcmpl-B7YvZIfQOLeknhdd8FkpHCLVCg01t",
+    "response": "These scripts are meant to be used with the macOS tool Raycast. Each script performs a different action related to browsing the internet:\n\n1. `open-in-guest-profile.sh`: Opens the current website in a guest profile/mode.\n2. `shorten-url-bitly.template.sh`: Shortens a URL using Bitly.\n3. `shlink-create-short-url.template.sh`: Creates a short URL using Shlink.\n4. `shorten-url.sh`: Shortens a URL using TinyURL.\n5. `go-to-outine.sh`: Opens a website in Outline mode.\n6. `open-multiple-websites-on-safari.template.sh`: Opens multiple websites in Safari.\n7. `to-private-browsing.sh`: Opens the current site in a private browser.\n8. `safari-current-window-urls.applescript`: Copies all URLs from the frontmost Safari window.\n9. `git-io.sh`: Shortens any github.com URL.\n10. `website-screenshots.sh`: Takes screenshots of a given URL.\n11. `new-browser-window.sh`: Opens a new window in the default browser.\n12. `peekalink.template.sh`: Uses the Peekalink.io API to peek at a specified URL.\n13. `short-url-emoji.sh`: Transforms a URL into a short Emoji URL.\n14. `Youtube Shorts in video player.sh`: Opens a YouTube Shorts video in the normal video player.\n15. `open-chrome-without-cors.sh`: Opens Chrome with web security option disabled.\n16. `safari-current-page-url.sh`: Copies the URL of the currently opened page in Safari.\n17. `chrome-current-page-url.sh`: Copies the URL of the currently opened page in Chrome.\n18. `convert-twitter-to-nitter.js`: Converts a Twitter link to a Nitter link. \n\nTo use any of these scripts, you would need to install Raycast and then add the script to your Raycast scripts directory.",
+    "metadata": {
+      "model": "gpt-4-0613",
+      "request_id": null,
+      "cache_hit": false,
+      "total_tokens": 5338,
+      "prompt_tokens": 4943,
+      "completion_tokens": 395
+    },
+    "usage": {
+      "completion_tokens": 395,
+      "prompt_tokens": 4943,
+      "total_tokens": 5338
+    }
+  },
+  "directory": "commands/browsing"
+}
