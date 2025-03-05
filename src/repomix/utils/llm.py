@@ -87,7 +87,12 @@ async def query_model(
         )
 
     except Exception as e:
-        logger.error(f"Error querying model: {e}")
+        logger.error(f"Error querying model {model}: {type(e).__name__}: {str(e)}")
+        logger.debug(f"Query details: content_length={len(content)}, max_tokens={max_tokens}, stream={stream}")
+        if isinstance(e, litellm.exceptions.NotFoundError):
+            logger.error(f"Invalid model ID: {model}")
+        elif isinstance(e, litellm.exceptions.BadRequestError):
+            logger.error(f"Bad request to model {model}: {str(e)}")
         raise
 
 def save_response(response: LLMResponse, path: str) -> None:
