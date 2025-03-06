@@ -7,7 +7,7 @@ from loguru import logger
 from repomix.utils.parser import glob_files, concatenate_files, chunk_content
 from repomix.utils.spacy_utils import count_tokens, truncate_text_by_tokens
 from repomix.utils.llm import query_model, LLMResponse, TokenUsage
-from repomix.utils.file_operations import collect_files, save_json, read_file
+from repomix.utils.file_utils import collect_files, save_json, read_file
 
 def get_file_content(files: List[Path]) -> str:
     """Get concatenated content from a list of files."""

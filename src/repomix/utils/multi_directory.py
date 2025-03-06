@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 import asyncio
 from loguru import logger
-from repomix.utils.file_operations import collect_files
+from repomix.utils.file_utils import collect_files
 from repomix.utils.parser import concatenate_files
 from repomix.utils.llm import query_model
 import litellm

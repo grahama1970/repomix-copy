@@ -7,7 +7,7 @@ import tiktoken
 from loguru import logger
 import mimetypes
 from repomix.utils.spacy_utils import count_tokens
-from repomix.utils.file_operations import is_binary_file
+from repomix.utils.file_utils import is_binary_file
 
 
 def glob_files(
